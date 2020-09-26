@@ -2,45 +2,6 @@
 #include <iostream>
 #include <string>
 using namespace std;
-class motosicle {
-	
-	int id;
-	string name;
-	float runlong;
-	
-public:
-
-	motosicle(){
-		cout << "this is call of deafult constructer" << endl;
-	}
-	
-	motosicle(int id, string name, float runlong) :id(id), name(name), runlong(runlong) {
-		cout << "object id : " << id << endl;
-		cout << "object name : " << name << endl;
-		cout << "object runlong : " << runlong << endl;
-	}
-	motosicle(motosicle&& object) {
-		object.id = 0;
-	}
-	void show_runlong() {
-		cout << "the runlong is: " << runlong << endl;
-	}
-	~motosicle(){}
-	friend class oner;
-	friend void show_all(const motosicle&);
-};
-class oner {
-public:
-	void set_runlong(motosicle &obj, float run_long) {
-		if(run_long>=0)
-		obj.runlong = run_long;
-	}
-};
-void show_all(const motosicle& object) {
-	cout << "id:" << object.id<<endl;
-	cout << "name:" << object.name << endl;
-	cout << "runlong:" << object.runlong << endl;
-}
 
 class SOL {
 	char* str=nullptr;
