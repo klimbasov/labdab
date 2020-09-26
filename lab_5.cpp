@@ -1,3 +1,5 @@
+//вариант 10
+
 #include <iomanip>
 #include <string>
 #include<conio.h>
