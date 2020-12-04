@@ -1,4 +1,4 @@
-// .h 
+// "MatrixWrapper.h" 
 #include <iostream>
 #pragma once
 namespace lab_namespace {
@@ -270,6 +270,11 @@ public:
 		delete[] massToSort;
 	}
 };
+//MatrixWrapper.cpp
+#include "MatrixWrapper.h"
+
+lab_namespace::container::container() {}
+lab_namespace::container::~container(){}
 
 // main.cpp
 #include <iostream>
