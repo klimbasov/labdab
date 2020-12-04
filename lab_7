@@ -675,6 +675,9 @@ public:
 		}
 		return nullptr;
 	}
+	void addUniqueItem(ValueType itemValue, KeyType itemKey) {
+		if (!this->serchItemByValue(itemValue)) this->addItem(itemValue, itemKey);
+	}
 
 	Iterator& begin() {
 		Iterator* newIterator = new Iterator(root->get_most_left());
