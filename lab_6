@@ -1,9 +1,9 @@
 // "MatrixWrapper.h" 
 #include <iostream>
+#include <algorithm>
 #pragma once
 namespace lab_namespace {
 	class container;
-	//class Iterator;
 	template<class T, size_t Length, size_t Wigth>
 	class MatrixWrapper;
 	template<size_t Length, size_t Wigth>
@@ -12,9 +12,9 @@ namespace lab_namespace {
 }
 
 class lab_namespace::container {
-	container();
 public:
-	virtual void _console_show_container()=0;
+	container();
+	virtual void _console_show_container() const =0;
 	virtual ~container();
 };
 
@@ -73,12 +73,10 @@ public:
 
 
 template<class T, size_t Length, size_t Wigth>
-class lab_namespace:: MatrixWrapper
+class lab_namespace:: MatrixWrapper:public lab_namespace::container
 {
 protected:
 	Position* position;
-
-	//typedef T** tMatrix;
 	T matrix[Length][Wigth];
 	bool mask[Length][Wigth];
 public:
@@ -159,7 +157,7 @@ public:
 };
 
 template<size_t Length, size_t Wigth>
-class lab_namespace::MatrixWrapper<char*, Length, Wigth> 
+class lab_namespace::MatrixWrapper<char*, Length, Wigth>:public lab_namespace::container 
 {
 protected:
 	Position* position;
