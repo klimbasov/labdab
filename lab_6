@@ -1,0 +1,296 @@
+// .h 
+#include <iostream>
+#pragma once
+namespace lab_namespace {
+	class container;
+	//class Iterator;
+	template<class T, size_t Length, size_t Wigth>
+	class MatrixWrapper;
+	template<size_t Length, size_t Wigth>
+	class MatrixWrapper<char*,Length,Wigth>;
+	class Position;
+}
+
+class lab_namespace::container {
+	container();
+public:
+	virtual void _console_show_container()=0;
+	virtual ~container();
+};
+
+class lab_namespace::Position {
+	size_t  _verticalPosition,
+			_horisontalPosition,
+			_maxVerticalPosition,
+			_maxHorisontalPosition;
+public:
+	Position(){}
+	Position(size_t MVPos, size_t MHPos) {
+		_maxVerticalPosition = MVPos;
+		_maxHorisontalPosition = MHPos;
+	}
+	Position(size_t MVPos, size_t MHPos, size_t VPos, size_t HPos) {
+		_maxVerticalPosition = MVPos;
+		_maxHorisontalPosition = MHPos;
+		_verticalPosition = VPos;
+		_horisontalPosition = HPos;
+	}
+	Position(const Position& settedPos) {
+		_maxVerticalPosition = settedPos._maxVerticalPosition;
+		_maxHorisontalPosition = settedPos._maxHorisontalPosition;
+		_verticalPosition = settedPos._verticalPosition;
+		_horisontalPosition = settedPos._horisontalPosition;
+	}
+	size_t verticalPosition() const{
+		return _verticalPosition;
+	}
+	size_t horisontalPosition() const{
+		return _horisontalPosition;
+	}
+	size_t maxVerticalPosition() const{
+		return _maxVerticalPosition;
+	}
+	size_t maxHorisontalPosition() const{
+		return _maxHorisontalPosition;
+	}
+	void setVerticalPosition(size_t VPos) {
+		_verticalPosition = VPos;
+	}
+	void setHorisontalPosition(size_t HPos) {
+		_horisontalPosition = HPos;
+	}
+	void setMaxVerticalPosition(size_t MVPos) {
+		_maxVerticalPosition = MVPos;
+	}
+	void setMaxHorisontalPosition(size_t MHPos) {
+		_maxHorisontalPosition = MHPos;
+	}
+	bool isValid(size_t VPos, size_t HPos) {
+		if (VPos < _maxVerticalPosition && HPos < _maxHorisontalPosition) return true;
+		return false;
+	}
+};
+
+
+template<class T, size_t Length, size_t Wigth>
+class lab_namespace:: MatrixWrapper
+{
+protected:
+	Position* position;
+
+	//typedef T** tMatrix;
+	T matrix[Length][Wigth];
+	bool mask[Length][Wigth];
+public:
+	MatrixWrapper() {
+		position = new Position(Length, Wigth);
+		for (int counter = 0; counter < Length; counter++)
+			for (int counter_1 = 0; counter_1 < Wigth; counter_1++)
+				mask[counter][counter_1] = false;
+	}
+	MatrixWrapper(const T**& matrix_to_wrapp) {
+		position = new Position(Length, Wigth);
+		for (int counter = 0; counter < Length; counter++)
+			for (int counter_1 = 0; counter_1 < Wigth; counter_1++) {
+				mask[counter][counter_1] = true;
+				matrix[counter][counter_1] = matrix_to_wrapp[counter][counter_1];
+			}
+	}
+	void addElementAt(T newItem, const size_t vPosition, const size_t hPosition)  {
+		if (position->isValid(vPosition, hPosition))
+		{
+			matrix[vPosition][hPosition] = newItem;
+			mask[vPosition][hPosition] = true;
+		}
+	}
+	void deleteElementAt(const size_t vPosition, const size_t hPosition)  {
+		if(position->isValid(vPosition, hPosition)) mask[vPosition][hPosition] = false;
+	}
+	void _console_show_container() const  {
+		for (int counter = 0; counter < Length; counter++)
+		{
+			for (int counter_1 = 0; counter_1 < Wigth; counter_1++)
+				if (mask[counter][counter_1])
+					std::cout << matrix[counter][counter_1] << "\t";
+				else
+					std::cout<<"[-]" << "\t";
+
+			std::cout << std::endl;
+		}
+	}
+	int count() {
+		int counter_2 = 0;
+		for (int counter = 0; counter < Length; counter++)
+			for (int counter_1 = 0; counter_1 < Wigth; counter_1++)
+				if (mask[counter][counter_1]) ++counter_2;
+		return counter_2;
+	}
+	const Position* size() const {
+		return position;
+	}
+	const Position* indexOf(T Item) const {
+		for (int counter = 0; counter < Length; counter++)
+			for (int counter_1 = 0; counter_1 < Wigth; counter_1++)
+				if (mask[counter][counter_1])
+					if (Item == matrix[counter][counter_1] ) {
+						Position* itemPosition = new Position(Length, Wigth, counter, counter_1);
+						return itemPosition;
+					}
+		return nullptr;
+	}
+	void sortItems() {
+		T* currentPointerHolder;
+		for (int counter = 0; counter < Length; counter++)
+			for (int counter_1 = 0; counter_1 < Wigth; counter_1++)
+			{
+				if (mask[counter][counter_1]) {
+					currentPointerHolder = matrix[counter] + counter_1;
+					for (int counter_2 = counter; counter_2 < Length; counter_2++)
+						for (int counter_3 = counter_1 + 1; counter_3 < Wigth; counter_3++)
+							if (mask[counter_2][counter_3])
+								if (*currentPointerHolder > matrix[counter_2][counter_3])
+									currentPointerHolder = matrix[counter_2] + counter_3;
+					T temp = matrix[counter][counter_1];
+					matrix[counter][counter_1] = *currentPointerHolder;
+					*currentPointerHolder = temp;
+				}
+			}
+	}
+};
+
+template<size_t Length, size_t Wigth>
+class lab_namespace::MatrixWrapper<char*, Length, Wigth> 
+{
+protected:
+	Position* position;
+
+	//typedef char*** tMatrix;
+	char* matrix[Length][Wigth];
+	bool mask[Length][Wigth];
+	int _COMP_C_STR(char* first, char* second) const {
+		if (*first < *second)
+			return 1;
+		if (*first > *second)
+			return 3;
+		if (*first == '\0' && *second == '\0')
+			return 2;
+		return _COMP_C_STR(++first, ++second);
+	}
+	void sort(char** massToSort, int size) {
+		for (int counter = 0; counter < size; counter++) {
+			for (int counter_1 = counter + 1; counter_1 < size; counter_1++) {
+				if (_COMP_C_STR(massToSort[counter], massToSort[counter_1]) == 3) {
+					char* temp = massToSort[counter];
+					massToSort[counter] = massToSort[counter_1];
+					massToSort[counter_1] = temp;
+				}
+			}
+		}
+	}
+public:
+	MatrixWrapper() {
+		position = new Position(Length, Wigth);
+		for (int counter = 0; counter < Length; counter++)
+			for (int counter_1 = 0; counter_1 < Wigth; counter_1++) 
+				mask[counter][counter_1] = false;
+	}
+	MatrixWrapper(const char***& matrix_to_wrapp) {
+		position = new Position(Length, Wigth);
+		for (int counter = 0; counter < Length; counter++)
+			for (int counter_1 = 0; counter_1 < Wigth; counter_1++) {
+				mask[counter][counter_1] = true;
+				matrix[counter][counter_1] = matrix_to_wrapp[counter][counter_1];
+			}
+	}
+	void addElementAt(char* newItem, const size_t vPosition, const size_t hPosition)  {
+		if (position->isValid(vPosition, hPosition)) {
+			matrix[vPosition][hPosition] = new char [80];
+			 newItem;
+			mask[vPosition][hPosition] = true;
+			for (size_t i = 0; i < 80; i++)
+			{
+				matrix[vPosition][hPosition][i] = newItem[i];
+			}
+		}
+	}
+	void deleteElementAt(const size_t vPosition, const size_t hPosition)  {
+		if (position->isValid(vPosition, hPosition)) mask[vPosition][hPosition] = false;
+	}
+	void _console_show_container () const {
+		for (int counter = 0; counter < Length; counter++)
+		{
+			for (int counter_1 = 0; counter_1 < Wigth; counter_1++)
+				if (mask[counter][counter_1])
+					std::cout << matrix[counter][counter_1] << "\t";
+				else
+					std::cout <<"[-]"<< "\t";
+
+			std::cout << std::endl;
+		}
+	}
+	int count() const {
+		int counter_2 = 0;
+		for (int counter = 0; counter < Length; counter++)
+			for (int counter_1 = 0; counter_1 < Wigth; counter_1++)
+				if (mask[counter][counter_1]) ++counter_2;
+		return counter_2;
+	}
+	const Position* size() const {
+		return position;
+	}
+	const Position* indexOf (char* Item) const {
+		for (int counter = 0; counter < Length; counter++)
+			for (int counter_1 = 0; counter_1 < Wigth; counter_1++)
+				if (mask[counter][counter_1])
+					if (_COMP_C_STR(Item, matrix[counter][counter_1]) == 2) {
+						Position* itemPosition = new Position(Length, Wigth, counter, counter_1);
+						return itemPosition;
+					}
+		return nullptr;
+	}
+	void sortItems() {
+		char** massToSort = new char* [count()];
+		int counter_2 = 0;
+		for (int counter = 0; counter < Length; counter++)
+			for (int counter_1 = 0; counter_1 < Wigth; counter_1++)
+				if (mask[counter][counter_1])
+				{
+					massToSort[counter_2] = matrix[counter][counter_1];
+					++counter_2;
+				}
+		counter_2 = 0;
+		sort(massToSort, count());
+		for (int counter = 0; counter < Length; counter++)
+			for (int counter_1 = 0; counter_1 < Wigth; counter_1++)
+				if (mask[counter][counter_1])
+				{
+					matrix[counter][counter_1] = massToSort[counter_2];
+					++counter_2;
+				}
+		delete[] massToSort;
+	}
+};
+
+// main.cpp
+#include <iostream>
+#include "MatrixWrapper.h"
+using namespace lab_namespace;
+void main(){
+MatrixWrapper<char*, 3, 3>* matrix = new MatrixWrapper<char*, 3, 3>;
+	char input_string[80];
+	int i = 0, j = 0;
+	std::cin >> input_string;
+	while (i!=3)
+	{
+		
+		matrix->addElementAt(input_string, i++, j++);
+		std::cin >> input_string;
+	} 
+	
+	matrix->_console_show_container();
+	matrix->sortItems();
+	matrix->_console_show_container();
+	std::cin >> input_string;
+	const Position* pos = matrix->indexOf(input_string);
+	std::cout << "element with value "<<input_string<<" is on (" << pos->horisontalPosition() << "," << pos->verticalPosition() << ")" << std::endl;	
+}
