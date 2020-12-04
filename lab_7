@@ -1,0 +1,716 @@
+//laborotoryWork7.h
+#pragma once
+#include <math.h>
+namespace laboratoryWork7 {
+	template<typename ValueTipe, typename KeyType>
+	class map;
+	class mapException;
+	template<class T>
+	class test;
+}
+
+class mapException: public std::exception
+{
+public:
+	mapException(std::string error_massege_text):std::exception(error_massege_text.c_str()) {
+
+	}
+	~mapException() {
+
+	}
+};
+
+
+
+template<typename ValueType, typename KeyType>
+class map {
+private:
+	class Node {
+		Node		*leftNode=nullptr,
+					*rightNode=nullptr,
+					*parentNode=nullptr;
+
+		ValueType	value;
+
+		KeyType		key;
+
+		int			factor = 0;
+		/*
+		bool _recount_Branch_factor() {
+			bool If_ballance_is_needed = false;
+			if (!this->parentNode) return;
+			if (this = this->parentNode->rightNode)
+				this->parentNode->factor++;
+			else
+				this->parentNode->factor--;
+			if (this->prentNode->HasRightChild() && this->parentNode->HasLeftChild()) return false;
+			Node* currentNode = this->parentNode;
+			while (currentNode->parentNode)
+			{
+				if (currentNode = currentNode->parentNode->leftNode) {
+					currentNode->parentNode->factor--;
+				}
+				if (currentNode = currentNode->parentNode->rightNode) {
+					currentNode->parentNode->factor++;
+				}
+				currentNode = currentNode->parentNode;
+				if (!If_ballance_is_needed)
+					if (abs(currentNode->factor) == 2) If_ballance_is_needed = true;
+				if (!currentNode->factor) break;
+
+			}
+			return If_ballance_is_needed;
+		}
+		void ballance__branch() {
+			if (!this->_recount_Branch_factor()) return;
+			Node *currentNode = this,
+				 *nodeToSwap=nullptr;
+			while (currentNode = currentNode->parentNode)
+			{
+				if (currentNode->factor == 2) {
+					if (currentNode->parentNode) {
+						if (currentNode = currentNode->parentNode->leftNode)
+							currentNode->parentNode->leftNode = currentNode->rightNode;
+						else
+							currentNode->parentNode->rightNode = currentNode->rightNode;
+					}
+					currentNode->rightNode->parentNode = currentNode->parentNode;
+					currentNode->parentNode = currentNode->rightNode;
+					currentNode->rightNode = currentNode->rightNode->leftNode;
+					currentNode->parentNode->leftNode = currentNode;
+					currentNode->RecounBranchFtactor();										//newTry
+					break;
+				}
+				if (currentNode->factor == -2) {
+					nodeToSwap = currentNode->leftNode->get_most_right();
+					nodeToSwap->Eject();
+					if (currentNode->parentNode) {
+						*currentNode->GetParentPointerToObject() = nodeToSwap;
+					}
+					currentNode->leftNode->parentNode = nodeToSwap;
+					currentNode->parentNode = nodeToSwap;
+					nodeToSwap->leftNode = currentNode->leftNode;
+					nodeToSwap->rightNode = currentNode;
+					currentNode->leftNode = nullptr;
+					currentNode->parentNode->leftNode = currentNode;
+					currentNode->RecounBranchFtactor();
+					break;
+				}
+			}
+			this->_recount_Branch_factor();
+		}
+		*/
+		bool _ballance_branch() {
+			if (this->factor == 2) {
+				if (this->rightNode->factor >= 0) {
+					if (this->parentNode)
+					*this->GetParentPointerToObject() = this->rightNode;
+					this->rightNode->parentNode = this->parentNode;
+					this->parentNode = this->rightNode;
+					this->rightNode = this->parentNode->leftNode;
+					this->parentNode->leftNode = this;
+					this->parentNode->leftNode = this;
+					if (this->rightNode)
+						this->rightNode->parentNode = this;
+					return true;
+				}
+				if (this->rightNode->factor < 0) {
+					if (this->parentNode)
+					*this->GetParentPointerToObject() = this->rightNode->leftNode;
+					this->rightNode->leftNode->parentNode = this->parentNode;
+					this->parentNode = this->rightNode->leftNode;
+					this->rightNode->parentNode = this->parentNode;
+					this->rightNode->leftNode = this->parentNode->rightNode;
+					this->parentNode->rightNode = this->rightNode;
+					this->rightNode = this->parentNode->leftNode;
+					this->parentNode->leftNode = this;
+					if (this->rightNode)
+						this->rightNode->parentNode = this;
+					if (this->parentNode->rightNode->leftNode)
+						this->parentNode->rightNode->leftNode->parentNode = this->parentNode->rightNode;
+					return true;
+				}
+			}
+			if (this->factor == -2) {
+				if (this->leftNode->factor <= 0) {
+					if (this->parentNode)
+					*this->GetParentPointerToObject() = this->leftNode;
+					this->leftNode->parentNode = this->parentNode;
+					this->parentNode = this->leftNode;
+					this->leftNode = this->parentNode->rightNode;
+					this->parentNode->rightNode = this;
+					if (this->leftNode)
+						this->leftNode->parentNode = this;
+					return true;
+					
+				}
+				if (this->leftNode->factor > 0) {
+					if(this->parentNode)
+					*this->GetParentPointerToObject() = this->leftNode->rightNode;
+					this->leftNode->rightNode->parentNode = this->parentNode;
+					this->parentNode = this->leftNode->rightNode;
+					this->leftNode->parentNode = this->parentNode;
+					this->leftNode->rightNode = this->parentNode->leftNode;
+					this->parentNode->leftNode = this->leftNode;
+					this->leftNode = this->parentNode->rightNode;
+					this->parentNode->rightNode = this;
+					if (this->leftNode)
+						this->leftNode->parentNode = this;
+					if(this->parentNode->leftNode->rightNode)
+						this->parentNode->leftNode->rightNode->parentNode = this->parentNode->leftNode;
+					return true;
+				}
+			}
+			return false;
+		}//cannon
+		int _recount_branch_factor(){
+			int LeftBrenchHeight = 0,
+				RightBrenchHeight = 0;
+			if (this->leftNode) {
+				LeftBrenchHeight = this->leftNode->_recount_branch_factor();
+			}
+			if (this->rightNode) {
+				RightBrenchHeight = this->rightNode->_recount_branch_factor();
+			}
+			this->factor = RightBrenchHeight - LeftBrenchHeight;
+			return (RightBrenchHeight < LeftBrenchHeight) ? LeftBrenchHeight+1 : RightBrenchHeight+1;
+		}
+		void _fix_bad_factor() {
+			if (this->leftNode) this->leftNode->_fix_bad_factor();
+			if (this->rightNode) this->rightNode->_fix_bad_factor();
+			if (this->_ballance_branch()) this->getRoot()->_recount_branch_factor();
+		}
+	public:
+		Node* get_most_left() {
+			if (this->leftNode)
+				return this->leftNode->get_most_left();
+			return this;
+		}
+		Node* get_most_right() {
+			if (this->rightNode)
+				return this->rightNode->get_most_right();
+			return this;
+		}
+		Node(ValueType value, KeyType key, Node* rootNode = nullptr) {
+			if (rootNode) {
+				while (rootNode->IsParent())
+				{
+					if (key == rootNode->key) return;
+					if (key > rootNode->key)
+						if (rootNode->rightNode)
+							rootNode = rootNode->rightNode;
+						else break;
+					else
+						if (rootNode->leftNode)
+							rootNode = rootNode->leftNode;
+						else break;
+				}
+			if (key == rootNode->key) return;
+			if (key > rootNode->key)
+				rootNode->rightNode = this;
+			else
+				rootNode->leftNode = this;
+			}
+		
+			this->parentNode = rootNode;
+			this->value = value;
+			this->key = key;
+			this->leftNode = nullptr;
+			this->rightNode = nullptr;
+			
+			if (parentNode) { 
+				this->getRoot()->_recount_branch_factor(); 
+				this->getRoot()->_fix_bad_factor();
+			}
+		}
+		Node() {
+			this->parentNode = nullptr;
+			this->leftNode = nullptr;
+			this->rightNode = nullptr;
+		}
+		Node(const Node& newNode) {
+			this->value = newNode.value;
+			this->key = newNode.key;
+			this->parentNode = newNode.parentNode;
+			this->leftNode = newNode.leftNode;
+			this->rightNode = newNode.rightNode;
+			this->factor = newNode.factor;
+
+		}
+		void setValue(ValueType newValue) {
+			try
+			{
+				if (!this)
+					throw mapException("this was nullptr");
+				this->value = newValue;
+			}
+			catch (mapException& exeption) {
+				std::cout << exeption.what();
+			}
+		}
+		bool IsParent() {
+			try
+			{
+				if (!this)
+					throw mapException("this was nullptr");
+				if (leftNode || rightNode)
+					return true;
+				return false;
+			}
+			catch (mapException& exeption) {
+				std::cout << exeption.what();
+			}
+		}
+		bool HasLeftChild() {
+			try
+			{
+				if (!this)
+					throw mapException("this was nullptr");
+				if (this->leftNode)
+					return true;
+				return false;
+			}
+			catch (mapException& exeption) {
+				std::cout << exeption.what();
+			}
+		}
+		bool HasRightChild() {
+			try
+			{
+				if (!this)
+					throw mapException("this was nullptr");
+				if (this->rightNode)
+					return true;
+				return false;
+			}
+			catch (mapException& exeption) {
+				std::cout << exeption.what();
+			}
+		}
+		Node* LeftChild() {
+			try
+			{
+				if (!this)
+					throw mapException("this was nullptr");
+				if (this->leftNode) return leftNode;
+				return nullptr;
+			}
+			catch (mapException& exeption) {
+				std::cout << exeption.what();
+			}
+		}
+		Node* getRoot() {
+			try
+			{
+				if (!this)
+					throw mapException("this was nullptr");
+				Node* temp = this;
+				while (temp->getParent())
+				{
+					temp = temp->getParent();
+				}
+				return temp;
+			}
+			catch (mapException& exeption) {
+				std::cout << exeption.what();
+			}
+		}
+		Node* RightChild() {
+			try
+			{
+				if (!this)
+					throw mapException("this was nullptr");
+				if (this->rightNode) return rightNode;
+				return nullptr;
+			}
+			catch (mapException& exeption) {
+				std::cout << exeption.what();
+			}
+		}
+		const int& getFactor() const {
+			try
+			{
+				if (!this)
+					throw mapException("this was nullptr");
+				return this->factor;
+			}
+			catch (mapException& exeption) {
+				std::cout << exeption.what();
+			}
+		}
+		const ValueType& getValue() const {
+			try
+			{
+				if (!this)
+					throw mapException("this was nullptr");
+				return this->value;
+			}
+			catch (mapException& exeption) {
+				std::cout << exeption.what();
+			}
+		}
+		const KeyType& getKey() const {
+			try
+			{
+				if (!this)
+					throw mapException("this was nullptr");
+				return this->key;
+			}
+			catch (mapException& exeption) {
+				std::cout << exeption.what();
+			}
+		}
+		Node* getParent() const {
+			try
+			{
+				if (!this)
+					throw mapException("this was nullptr");
+				return this->parentNode;
+			}
+			catch (mapException& exeption) {
+				std::cout << exeption.what();
+			}
+		}
+		Node* serchKey(KeyType key) {
+			try
+			{
+			if (!this) 
+				throw mapException("this was nullptr");
+			if (this->key == key) return this;
+			if (this->key > key && this->leftNode) return this->leftNode->serchKey(key);
+			if(this->key < key && this->rightNode) return this->rightNode->serchKey(key);
+			return nullptr;
+
+			}
+			catch (mapException& exeption) {
+				std::cout << exeption.what();
+			}
+		}
+		Node** GetParentPointerToObject() {
+			try
+			{
+				if (!this)
+					throw mapException("this was nullptr");
+				if (!this->parentNode) return nullptr;
+				if (this->parentNode->leftNode == this)
+					return &this->parentNode->leftNode;
+				else
+					return &this->parentNode->rightNode;
+			}
+			catch (mapException& exeption) {
+				std::cout << exeption.what();
+			}
+		}
+		Node* Eject(Node* rootPointer) {
+			try
+			{
+				if (!this)
+					throw mapException("this was nullptr");
+				Node* temp;
+				if (!this->IsParent()) {
+					if (this->parentNode)
+					{
+						temp = this->parentNode;
+						*this->GetParentPointerToObject() = nullptr;
+						this->parentNode = nullptr;
+						temp->_recount_branch_factor();
+						temp->_fix_bad_factor();
+						return temp->getRoot();
+					}
+					return nullptr;
+				}
+				if (this->factor == 1 || this->factor == 0) {
+					temp = this->rightNode->get_most_left();
+					*temp->GetParentPointerToObject() = nullptr;
+					if (temp->rightNode) {
+						temp->rightNode->parentNode = temp->parentNode;
+						temp->parentNode->leftNode = temp->rightNode;
+					}
+					temp->parentNode = this->parentNode;
+					if (this->parentNode) {
+						*this->GetParentPointerToObject() = temp;
+					}
+					if (!(this->leftNode == temp))
+					{
+						temp->leftNode = this->leftNode;
+						temp->leftNode->parentNode = temp;
+					}
+					temp->rightNode = this->rightNode;
+					if (temp->rightNode)
+						temp->rightNode->parentNode = temp;
+					this->parentNode = nullptr;
+					this->leftNode = nullptr;
+					this->rightNode = nullptr;
+					temp->getRoot()->_recount_branch_factor();
+					temp->getRoot()->_fix_bad_factor();
+					return temp->getRoot();
+
+
+				}
+				if (this->factor == -1) {
+					temp = this->rightNode->get_most_right();
+					*temp->GetParentPointerToObject() = nullptr;
+					if (temp->leftNode) {
+						temp->leftNode->parentNode = temp->parentNode;
+						temp->parentNode->rightNode = temp->leftNode;
+					}
+					temp->parentNode = this->parentNode;
+					if (this->parentNode) {
+						*this->GetParentPointerToObject() = temp;
+					}
+					if (!(this->rightNode == temp))
+					{
+						temp->rightNode = this->rightNode;
+						temp->rightNode->parentNode = temp;
+					}
+					temp->leftNode = this->leftNode;
+					if (temp->leftNode)
+						temp->leftNode->parentNode = temp;
+					this->parentNode = nullptr;
+					this->leftNode = nullptr;
+					this->rightNode = nullptr;
+					temp->getRoot()->_recount_branch_factor();
+					temp->getRoot()->_fix_bad_factor();
+					return temp->getRoot();
+				}
+			}
+			catch (mapException& exeption) {
+				std::cout << exeption.what();
+			}
+		}// Node still can be used without loosing data
+
+		friend class Iterator;
+	};
+public:
+	class Iterator {
+		typedef Node Item;
+		Item* currentItem;
+	public:
+		Iterator(const Iterator& newIterator) {
+			this->currentItem = newIterator.currentItem;
+		}
+		Iterator() {}
+		Iterator(Item* newItem) {
+
+			currentItem = newItem;
+			/*this->currentItem->value = newItem->value;
+			this->currentItem->key = newItem->key;
+			this->currentItem->parentNode = newItem->parentNode;
+			this->currentItem->leftNode = newItem->leftNode;
+			this->currentItem->rightNode = newItem->rightNode;
+			this->currentItem->factor = newItem->factor;*/
+		}
+		Iterator(Item& newItem) {
+			this->currentItem = &newItem;
+		}
+		Iterator& operator ++(int) {
+			if (!this->currentItem) return *this;
+			Iterator tempReturnIterator(*this);
+			if (this->currentItem->HasRightChild()) {
+				this->currentItem = this->currentItem->RightChild();
+				while (this->currentItem->HasLeftChild()) {
+					this->currentItem = this->currentItem->LeftChild();
+				}
+			}
+			else
+			{
+				Iterator _t_(this->currentItem->getParent()->LeftChild());
+				if (this->currentItem == _t_.currentItem) {
+
+					this->currentItem = this->currentItem->getParent();
+				}
+				else
+				{
+					if (this->currentItem == this->currentItem->getParent()->RightChild()) {
+						while (this->currentItem == this->currentItem->getParent()->RightChild())
+						{
+							this->currentItem = this->currentItem->getParent();
+							if (!this->currentItem->getParent()) break;
+						}
+						this->currentItem = this->currentItem->getParent();
+					}
+					//else this->currentItem = nullptr;
+				}
+			}
+			return tempReturnIterator;
+		}
+		Iterator& operator ++() {
+			Iterator tempReturnIterator(*this);
+			if (this->currentItem->HasRightChild()) {
+				this->currentItem = this->currentItem->RightChild();
+				while (this->currentItem->HasLeftChild()) {
+					this->currentItem = this->currentItem->LeftChild();
+				}
+			}
+			else
+			{
+				Iterator _t_(this->currentItem->getParent()->LeftChild());
+				if (this->currentItem == _t_.currentItem) {
+
+					this->currentItem = this->currentItem->getParent();
+				}
+				else
+				{
+					if (this->currentItem == this->currentItem->getParent()->RightChild()) {
+						while (this->currentItem == this->currentItem->getParent()->RightChild() && this->currentItem)
+						{
+							this->currentItem = this->currentItem->getParent();
+						}
+						this->currentItem = this->currentItem->getParent();
+					}
+					else this->currentItem = nullptr;
+				}
+			}
+			return this;
+		}
+		Item& operator *() {
+			try
+			{
+				if (!this)
+					throw mapException("this was nullptr [Iterator]");
+				return *currentItem;
+			}
+			catch (mapException& exeption) {
+				std::cout << exeption.what();
+			}
+		}
+		Item* operator ->()const {
+			try
+			{
+				if (!this)
+					throw mapException("this was nullptr [Iterator]");
+				return this->currentItem;
+			}
+			catch (mapException& exeption) {
+				std::cout << exeption.what();
+			}
+		}
+		bool operator ==(const Iterator& iteratorToCompare) {
+			try
+			{
+				if (!this)
+					throw mapException("this was nullptr [Iterator]");
+				return this->currentItem == iteratorToCompare.currentItem;
+			}
+			catch (mapException& exeption) {
+				std::cout << exeption.what();
+			}
+		}
+		bool operator !=(const Iterator& iteratorToCompare) {
+			try
+			{
+				if (!this)
+					throw mapException("this was nullptr [Iterator]");
+				return this->currentItem != iteratorToCompare.currentItem;
+			}
+			catch (mapException& exeption) {
+				std::cout << exeption.what();
+			}
+		}
+		Iterator& operator = (const Iterator& _iter) {
+			try
+			{
+				if (!this)
+					throw mapException("this was nullptr [Iterator]");
+				return Iterator(_iter.currentNode);
+			}
+			catch (mapException& exeption) {
+				std::cout << exeption.what();
+			}
+			//this->currentNode = _iter.currentNode;
+		}
+	};
+private:
+	typedef Node Item;
+	Item* root = nullptr;
+public:
+	map(){
+		
+	}
+	void addItem(ValueType itemValue, KeyType itemKey) {
+		if(!root)
+			root = new Node(itemValue, itemKey, root);
+		else
+		{
+			new Node(itemValue, itemKey, root);
+			root = root->getRoot();
+		}
+
+	}
+	void ejectItem(Item* oddItem) {	
+		try
+		{
+			if (!root) throw mapException("Tree was Empty");
+		if(oddItem)
+		root=oddItem->Eject(root);
+		}
+		catch (mapException&exeption)
+		{
+			std::cout << exeption.what();
+		}
+	}
+	Item* serchItemByKey(KeyType keyToSerch) {
+		try
+		{
+			if (!this)
+				throw mapException("root was nullptr");
+			return root->serchKey(keyToSerch);
+		}
+		catch (mapException& exeption) {
+			std::cout << exeption.what();
+		}
+	}
+	Item* serchItemByValue(KeyType ValueToSerch) {
+		try
+		{
+			if (!this)
+				throw mapException("root was nullptr");
+			for (Iterator iter = this->begin(); iter != this->end(); iter++) {
+				if (iter->getValue() == ValueToSerch)
+					return	&*iter;
+			}
+		}
+		catch (mapException& exeption) {
+			std::cout << exeption.what();
+		}
+		return nullptr;
+	}
+
+	Iterator& begin() {
+		Iterator* newIterator = new Iterator(root->get_most_left());
+		return *newIterator;
+	}
+	Iterator& end() {
+		Iterator* newIterator =new Iterator(nullptr);
+		return *newIterator;
+	}
+};
+//main.cpp
+#include <iostream>
+#include "LaborotoryWork7.h"
+
+void main(){
+	
+	map<int, int> intMap;
+	intMap.ejectItem(intMap.serchItemByKey(4));
+	intMap.addItem(5, 4);
+	intMap.addItem(1, 1);
+	intMap.addItem(2, 0);
+	intMap.addItem(9, 9);
+	intMap.addItem(0, 11);
+	intMap.addItem(-1, 12);
+	intMap.addItem(7, -1);
+	intMap.addItem(12, 100);
+	intMap.addItem(100, 111);
+	intMap.addItem(101, 7);
+	intMap.addItem(3, 8);
+	intMap.addItem(4, -20);
+	intMap.addItem(8, 3);
+	intMap.addItem(6, 5);
+	intMap.ejectItem(intMap.serchItemByKey(4));
+	intMap.ejectItem(intMap.serchItemByKey(9));
+	for (map<int, int>::Iterator iter = intMap.begin(); iter != intMap.end(); iter++) {
+		iter->setValue(2);
+		std::cout << iter->getKey()<<"[factor="<< iter->getFactor()<< "]\t:" <<iter->getValue() << std::endl;
+	}
+}
