@@ -1,0 +1,159 @@
+// algorythm.h
+#pragma once
+#include <map>
+#include <string>
+#include <fstream>
+#include <iostream>
+#include <list>
+#include "LaborotoryWork7.h"
+namespace algorythm {
+	class MyClass;
+	class motosicle;
+	std::fstream& operator >>(std::fstream&, motosicle&);
+	std::fstream& operator <<(std::fstream&, const motosicle&);
+	std::istream& operator >>(std::istream&, motosicle&);
+	std::ostream& operator <<(std::ostream&, const motosicle&);
+}
+class algorythm::motosicle {
+
+	int id=0;
+	std::string name="";
+	float runlong=0;
+public:
+
+	motosicle() {
+	}
+
+	motosicle(int id, std::string name, float runlong) :id(id), name(name), runlong(runlong) {
+	}
+	motosicle(int id, std::string name) : id(id), name(name) {
+	}
+	void show_runlong() {
+		std::cout << "the runlong is: " << runlong << std::endl;
+	}
+	~motosicle() {}
+	friend class oner;
+	bool operator ==(const motosicle& obj) const {
+		return this->id == obj.id && this->name == obj.name && this->runlong == obj.runlong;
+	}
+	friend std::fstream& operator >>(std::fstream& , motosicle& );
+	friend std::fstream& operator <<(std::fstream& , const motosicle& );
+	friend std::istream& operator >>(std::istream& , motosicle& );
+	friend std::ostream& operator <<(std::ostream& , const motosicle& );
+};
+class algorythm::MyClass
+{
+	size_t spot_words_by_symbol(const std::string&, const std::string&);
+	void delete_similar_objects(std::map<motosicle, int>::iterator&, std::map<motosicle, int>::iterator&, std::map<motosicle, int>& );
+public:
+	void task_1(const char *, const char*, const std::string&);
+	//void task_2(std::map<std::string, int>::iterator, std::map<std::string, int>::iterator, const char*);
+	void task_3(std::map<motosicle, int>::iterator&, std::map<motosicle, int>::iterator&, std::map<motosicle, int>&);
+};
+
+// algorythm.cpp
+#include "Algorithm.h"
+
+std::fstream& algorythm::operator >>(std::fstream& stream, algorythm::motosicle& obj) {
+	stream >> obj.id >> obj.name >> obj.runlong;
+	return stream;
+}
+std::fstream& algorythm::operator <<(std::fstream& stream, const algorythm::motosicle& obj) {
+	stream << obj.id <<'\r'<< obj.name << '\r' << obj.runlong << '\r';
+	return stream;
+}
+std::istream& algorythm::operator >>(std::istream& stream, algorythm::motosicle& obj) {
+	stream >> obj.id >> obj.name >> obj.runlong;
+	return stream;
+}
+std::ostream& algorythm::operator <<(std::ostream& stream, const algorythm::motosicle& obj) {
+	stream << obj.id << '\n' << obj.name << '\n' << obj.runlong << '\n';
+	return stream;
+}
+
+void algorythm::MyClass::task_1(const char* firstPath, const char* secondPath, const std::string& symbol_set) {
+	std::fstream stream(firstPath, std::ios::in);
+	std::list<std::string> container;
+	std::string obj;
+	while (!stream.eof())
+	{
+		stream >> obj;
+		container.push_back(obj);
+	}
+	stream.clear();
+	stream.close();
+	stream.open(secondPath, std::ios::out|std::ios::trunc);
+	for (std::list<std::string>::iterator _begin = container.begin(), _end = container.end(); _begin != _end; _begin++) {
+		stream << spot_words_by_symbol((*_begin), symbol_set)<<'\r';
+	}
+	stream.clear();
+	stream.close();
+}
+void algorythm::MyClass::task_3(std::map<motosicle, int>::iterator& _begin, std::map<motosicle, int>::iterator& _end, std::map<motosicle, int>& motomap){
+	try {
+		delete_similar_objects(_begin, _end, motomap);
+	}
+	catch(...) {
+		std::cout << "hohohohohohohohohohohohohohohdk;sdfgs.j,fzdjvgdzmvgmndzvmzvgkzjdfhzjfhkfhzd.kfhfzd"<< std::endl;
+	}
+}
+size_t algorythm::MyClass::spot_words_by_symbol(const std::string& str, const std::string& symbol_set) {
+	if (symbol_set.empty() || str.empty())return 0;
+	bool spoted = false;
+	int res = 0, counter_str=0, counter_set=0, str_size = str.length(), set_size = symbol_set.length();
+	while (counter_str<str_size)
+	{
+		if (str[counter_set] == ' ') {
+			spoted = false;
+			counter_set = 0;
+		}
+		while (counter_set !=set_size && !spoted)
+		{
+			if (symbol_set[counter_set] == str[counter_str]) {
+				++res;
+				spoted = true;
+			}
+			++counter_set;
+		}
+		++counter_str;
+	}
+	return res;
+}
+int spot_begin_position_sequince_in_string(char* str, char* sequence, size_t str_size, size_t sequence_size) {
+	if (!(str && sequence) && str_size < sequence_size) return -1;
+	int counter = sequence_size, counter_1, counter_2;
+	while (counter<str_size)
+	{
+		counter_1 = sequence_size;
+		counter_2 = counter;
+		if (str[counter_2] == sequence[counter_1]) {
+			while (str[counter_2] == sequence[counter_1] && counter_1!=-1)
+			{
+				--counter_1;
+				--counter_2;
+			}
+			if (counter_1 == -1)
+				return counter_2 + 1;
+		}
+	}
+
+}
+void algorythm::MyClass::delete_similar_objects(std::map<motosicle,int>::iterator& _begin, std::map<motosicle, int>::iterator& _end, std::map<motosicle, int>& motomap){
+	std::map<motosicle, int>::iterator _iter;
+	while (_begin!=_end)
+	{
+		_iter = _begin;
+		++_iter;
+		while (_iter!=_end)
+		{
+			if ((*_begin).first == (*_iter).first) {
+				_iter=motomap.erase(_iter);
+			}
+			else
+			{
+				++_iter;
+			}
+		}
+		++_begin;
+	}
+}
