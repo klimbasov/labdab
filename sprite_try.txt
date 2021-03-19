@@ -1,0 +1,25 @@
+ doodle_sprite:
+ _ 
+^ ^
+| |_
+|||
+monster_sprite:
+  _ _
+|<0_0>|
+  | |
+
+ _ _
+<0_0>
+ - -
+
+plane_sprite:
+
+____
++ diffrent color
+
+
+botton_sprite:
+ _______
+|texttex|
+|_______|
+
